@@ -1,0 +1,291 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model chitietdonhang {
+  donhangid Int
+  sanphamid Int
+  soluong   Int
+  gia       Float   @db.Money
+  donhang   donhang @relation(fields: [donhangid], references: [id], onUpdate: NoAction, map: "FK_chitietdonhang_donhang")
+  sanpham   sanpham @relation(fields: [sanphamid], references: [id], onUpdate: NoAction, map: "FK_chitietdonhang_sanpham")
+
+  @@id([donhangid, sanphamid], map: "PK_chitietdonhang")
+}
+
+model chitietkhuyenmai {
+  khuyenmaiid Int
+  sanphamid   Int
+  khuyenmai   khuyenmai @relation(fields: [khuyenmaiid], references: [id], onUpdate: NoAction, map: "FK_chitietkhuyenmai_khuyenmai")
+  sanpham     sanpham   @relation(fields: [sanphamid], references: [id], onUpdate: NoAction, map: "FK_chitietkhuyenmai_sanpham")
+
+  @@id([khuyenmaiid, sanphamid], map: "PK_chitietkhuyenmai")
+}
+
+model chitietnhaphang {
+  phieunhaphangid Int
+  sanphamid       Int
+  soluong         Int
+  gia             Float         @db.Money
+  phieunhaphang   phieunhaphang @relation(fields: [phieunhaphangid], references: [id], onUpdate: NoAction, map: "FK_chitietnhaphang_phieunhaphang")
+  sanpham         sanpham       @relation(fields: [sanphamid], references: [id], onUpdate: NoAction, map: "FK_chitietnhaphang_sanpham")
+
+  @@id([phieunhaphangid, sanphamid], map: "PK_chitietnhaphang")
+}
+
+model donhang {
+  id             Int              @id(map: "PK_donhang")
+  ngaytao        DateTime         @db.DateTime
+  trangthai      String           @db.NVarChar(20)
+  diachi         String           @db.NChar(10)
+  ngaygiao       DateTime         @db.Date
+  khachhangid    Int
+  chitietdonhang chitietdonhang[]
+  khachhang      khachhang        @relation(fields: [khachhangid], references: [id], onUpdate: NoAction, map: "FK_donhang_khachhang")
+  hoadon         hoadon[]
+}
+
+model giasanpham {
+  id         Int      @id(map: "PK_giasanpham")
+  gia        Float    @db.Money
+  loai       Boolean
+  ngay       DateTime @db.DateTime
+  sanphamid  Int
+  nhanvienid Int
+  nhanvien   nhanvien @relation(fields: [nhanvienid], references: [id], onUpdate: NoAction, map: "FK_giasanpham_nhanvien")
+  sanpham    sanpham  @relation(fields: [sanphamid], references: [id], onUpdate: NoAction, map: "FK_giasanpham_sanpham")
+}
+
+model hoadon {
+  id         Int      @id(map: "PK_hoadon")
+  ngaytao    DateTime @db.DateTime
+  nhanvienid Int
+  donhangid  Int
+  donhang    donhang  @relation(fields: [donhangid], references: [id], onUpdate: NoAction, map: "FK_hoadon_donhang")
+  nhanvien   nhanvien @relation(fields: [nhanvienid], references: [id], onUpdate: NoAction, map: "FK_hoadon_nhanvien")
+}
+
+model khachhang {
+  id          Int       @id(map: "PK__khachhan__3213E83F652D9EF7")
+  loaiuserid  Int
+  tongdiem    Int?
+  diemhientai Int?
+  donhang     donhang[]
+  users       users     @relation(fields: [id, loaiuserid], references: [id, loaiuserid], onUpdate: NoAction, map: "FK__khachhang__67DE6983")
+
+  @@unique([id, loaiuserid])
+}
+
+model kho {
+  id            Int             @id(map: "PK_kho") @unique(map: "UK_kho_diachi")
+  ten           String          @unique(map: "UK_kho_ten") @db.NVarChar(50)
+  diachi        String          @db.NVarChar(100)
+  mota          String          @db.NVarChar(100)
+  phieunhaphang phieunhaphang[]
+}
+
+model khuyenmai {
+  id               Int                @id(map: "PK_khuyenmai")
+  ngaybatdau       DateTime           @db.Date
+  songay           Int
+  phantram         Int
+  nhanvienid       Int
+  chitietkhuyenmai chitietkhuyenmai[]
+  nhanvien         nhanvien           @relation(fields: [nhanvienid], references: [id], onUpdate: NoAction, map: "FK_khuyenmai_nhanvien")
+}
+
+model loaisanpham {
+  id      Int       @id(map: "PK_loaisanpham")
+  ten     String    @db.NVarChar(20)
+  sanpham sanpham[]
+}
+
+model loaiuser {
+  id    Int     @id(map: "PK_loaiuser")
+  ten   String  @unique(map: "UK_loaiuser_ten") @db.NVarChar(20)
+  users users[]
+}
+
+model loaivpp {
+  id           Int            @id(map: "PK_loaivpp")
+  ten          String         @unique(map: "UK_loaivpp_ten") @db.NVarChar(20)
+  vanphongpham vanphongpham[]
+}
+
+model ngonngu {
+  id   Int    @id(map: "PK_ngonngu")
+  ten  String @unique(map: "UK_ngonngu_ten") @db.NVarChar(20)
+  sach sach[]
+}
+
+model nhacungcap {
+  id            Int             @id(map: "PK_nhacungcap")
+  ten           String          @unique(map: "UK_ncc_ten") @db.NVarChar(200)
+  diachi        String          @db.NVarChar(200)
+  sdt           String          @unique(map: "UK_ncc_sdt") @db.NVarChar(50)
+  email         String          @unique(map: "UK_ncc_emai") @db.NVarChar(100)
+  phieunhaphang phieunhaphang[]
+}
+
+model nhanvien {
+  id            Int             @id(map: "PK__nhanvien__3213E83F62B12E8A")
+  loaiuserid    Int
+  conlamviec    Boolean?
+  cccd          String?         @db.VarChar(15)
+  giasanpham    giasanpham[]
+  hoadon        hoadon[]
+  khuyenmai     khuyenmai[]
+  users         users           @relation(fields: [id, loaiuserid], references: [id, loaiuserid], onUpdate: NoAction, map: "FK__nhanvien__6501FCD8")
+  phieunhaphang phieunhaphang[]
+
+  @@unique([id, loaiuserid])
+}
+
+model nhaphathanh {
+  id   Int    @id(map: "PK_nhaphathanh")
+  ten  String @unique(map: "UK_nhaphathanh_ten") @db.NVarChar(100)
+  sach sach[]
+}
+
+model otp {
+  id    Int      @id(map: "PK_OTP")
+  otp   String   @db.Char(4)
+  ngay  DateTime @db.DateTime
+  email String   @db.VarChar(60)
+  users users    @relation(fields: [email], references: [email], onUpdate: NoAction, map: "FK_otp_users")
+}
+
+model phieunhaphang {
+  id              Int               @id(map: "PK_phieunhaphang")
+  ngaynhap        String            @db.NChar(10)
+  khoid           Int
+  nhanvienid      Int
+  nhacungcapid    Int
+  chitietnhaphang chitietnhaphang[]
+  kho             kho               @relation(fields: [khoid], references: [id], onUpdate: NoAction, map: "FK_phieunhaphang_kho")
+  nhacungcap      nhacungcap        @relation(fields: [nhacungcapid], references: [id], onUpdate: NoAction, map: "FK_phieunhaphang_nhacungcap")
+  nhanvien        nhanvien          @relation(fields: [nhanvienid], references: [id], onUpdate: NoAction, map: "FK_phieunhaphang_nhanvien")
+}
+
+model roles {
+  id         Int          @id(map: "PK_roles")
+  name       String       @unique(map: "UK_role_name") @db.NVarChar(20)
+  user_roles user_roles[]
+}
+
+model sach {
+  id            Int         @id(map: "PK__sach__3213E83F790404E0")
+  loaisanphamid Int
+  sotrang       Int
+  namxuatban    Int?
+  theloaiid     Int
+  ngonnguid     Int
+  tacgiaid      Int
+  nhaphathanhid Int
+  sanpham       sanpham     @relation(fields: [id, loaisanphamid], references: [id, loaisanphamid], onUpdate: NoAction, map: "FK__sach__531856C7")
+  ngonngu       ngonngu     @relation(fields: [ngonnguid], references: [id], onUpdate: NoAction, map: "FK_sach_ngonngu")
+  nhaphathanh   nhaphathanh @relation(fields: [nhaphathanhid], references: [id], onUpdate: NoAction, map: "FK_sach_nhaphathanh")
+  tacgia        tacgia      @relation(fields: [tacgiaid], references: [id], onUpdate: NoAction, map: "FK_sach_tacgia")
+  theloai       theloai     @relation(fields: [theloaiid], references: [id], onUpdate: NoAction, map: "FK_sach_theloai")
+
+  @@unique([id, loaisanphamid])
+}
+
+model sanpham {
+  id               Int                @id(map: "PK_sanpham")
+  ten              String             @unique(map: "UK_sanpham_ten") @db.NVarChar(100)
+  loaisanphamid    Int
+  hinh             String             @db.NVarChar(200)
+  soluongton       Int
+  mota             String             @db.NVarChar(50)
+  kichthuoc        String             @db.NVarChar(20)
+  donvitinh        String             @db.NVarChar(10)
+  isactived        Boolean
+  chitietdonhang   chitietdonhang[]
+  chitietkhuyenmai chitietkhuyenmai[]
+  chitietnhaphang  chitietnhaphang[]
+  giasanpham       giasanpham[]
+  sach             sach?
+  loaisanpham      loaisanpham        @relation(fields: [loaisanphamid], references: [id], onUpdate: NoAction, map: "FK_sanpham_loaisanpham")
+  vanphongpham     vanphongpham?
+
+  @@unique([id, loaisanphamid], map: "UK_sanpham_id_loai_id")
+}
+
+model tacgia {
+  id   Int     @id(map: "PK_tacgia")
+  ten  String  @unique(map: "UK_tacgia_ten") @db.NVarChar(50)
+  mota String? @db.NVarChar(100)
+  sach sach[]
+}
+
+model theloai {
+  id   Int     @id(map: "PK_theloai")
+  loai String  @unique(map: "UK_theloai_loai") @db.NVarChar(100)
+  mota String? @db.NVarChar(100)
+  sach sach[]
+}
+
+model user_roles {
+  roleid Int
+  userid Int
+  roles  roles @relation(fields: [roleid], references: [id], onUpdate: NoAction, map: "FK_user_roles_roles")
+  users  users @relation(fields: [userid], references: [id], onUpdate: NoAction, map: "FK_user_roles_users1")
+
+  @@id([roleid, userid], map: "PK_user_roles")
+}
+
+model users {
+  id                Int          @id(map: "PK_users") @default(autoincrement())
+  loaiuserid        Int
+  ho                String       @db.NVarChar(30)
+  ten               String       @db.NVarChar(10)
+  ngaysinh          DateTime?    @db.Date
+  gioitinh          Boolean
+  diachi            String       @db.NVarChar(50)
+  sdt               String       @unique(map: "UK_sdt") @db.VarChar(10)
+  email             String       @unique(map: "UK_email") @db.VarChar(60)
+  username          String       @unique(map: "UK_username") @db.VarChar(20)
+  password          String       @db.VarChar(60)
+  ngaytao           DateTime     @default(now(), map: "DF_users_ngaytao") @db.DateTime
+  ngaycapnhat       DateTime     @default(now(), map: "DF_users_ngaycapnhat") @db.DateTime
+  solanloginthatbai Int
+  isactived         Boolean      @default(false, map: "DF_users_isactived")
+  islocked          Boolean      @default(false, map: "DF_users_islocked")
+  khachhang         khachhang?
+  nhanvien          nhanvien?
+  otp               otp[]
+  user_roles        user_roles[]
+  loaiuser          loaiuser     @relation(fields: [loaiuserid], references: [id], onUpdate: NoAction, map: "FK_users_loaiuser")
+
+  @@unique([id, loaiuserid], map: "UK_user_id_loaiuserid")
+}
+
+model vanphongpham {
+  id            Int      @id(map: "PK__vanphong__3213E83FD367DCAD")
+  loaisanphamid Int
+  thuonghieu    String?  @db.NVarChar(20)
+  xuatxu        String?  @db.NVarChar(20)
+  kieudang      String?  @db.NVarChar(20)
+  loaivppid     Int?
+  sanpham       sanpham  @relation(fields: [id, loaisanphamid], references: [id, loaisanphamid], onUpdate: NoAction, map: "FK__vanphongpham__503BEA1C")
+  loaivpp       loaivpp? @relation(fields: [loaivppid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_vanphongpham_loaivpp")
+
+  @@unique([id, loaisanphamid])
+}
+
+model sysdiagrams {
+  name         String @db.NVarChar(128)
+  principal_id Int
+  diagram_id   Int    @id(map: "PK__sysdiagr__C2B05B616CEFC2D1") @default(autoincrement())
+  version      Int?
+  definition   Bytes?
+
+  @@unique([principal_id, name], map: "UK_principal_name")
+}
